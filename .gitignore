@@ -1,0 +1,16 @@
+# 忽略media文件夹
+media/
+# 忽略Python编译文件和缓存
+__pycache__/
+*.py[cod]
+*$py.class
+# 忽略IDE特定文件
+.idea/
+.vscode/
+# 忽略环境变量文件
+.env
+.env.local
+# 忽略数据库文件
+*.sqlite3
+# 忽略静态文件(如果已收集)
+staticfiles/

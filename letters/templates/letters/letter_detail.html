@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>邮件详情</title>
+    <style>
+        /* 复用letter_history.html中的样式 */
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif; 
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #f0f0f0;
+            transform: translateX(-3px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ff69b4;
+            text-align: center;
+            font-family: 'SimSun', serif; 
+        }
+        .letter-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            background-image: linear-gradient(transparent 95%, #efd6c5 95%);
+            background-size: 100% 1.5em;
+        }
+        .letter-title {
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 30px;
+            color: #a369ff;
+            line-height: 1.5; /* 添加固定行高 */
+            height: 35px; /* 固定高度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .letter-author {
+            /*margin-bottom: 12px;*/
+            /* 收件人靠边字体小 */
+            text-align: left;
+            font-size: 14px;
+        }
+        .letter-sent-time {
+            margin-bottom: 12px;
+            /* 收件人靠边字体小 */
+            text-align: left;
+            font-size: 14px;
+        }
+        .letter-content {
+            white-space: pre-line;
+            padding: 15px;
+            min-height: 400px;
+            max-height: none;
+            overflow-y: auto;
+            line-height: 1.5em;
+            font-size: 16px;
+            background: transparent;
+            word-wrap: break-word;
+        }
+        .letter-content img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .delete-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .delete-btn:hover {
+            background-color: #cc0000;
+        }
+        /* 新增样式 */
+        .book-layout {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 20px;
+            min-height: calc(100vh - 100px); /* 设置最小高度为视口高度减去顶部空间 */
+        }
+        .left-sidebar {
+            width: 300px; /* 固定宽度 */
+            min-height: 100%; /* 继承父容器高度 */
+            background-color: #f9f3e9;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            flex-shrink: 0; /* 防止缩小 */
+        }
+        .letter-container {
+            width: calc(100% - 320px); /* 固定宽度，减去侧边栏宽度和间隙 */
+            min-height: 100%; /* 继承父容器高度 */
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-image: linear-gradient(transparent 95%, #efd6c5 95%);
+            background-size: 100% 1.5em;
+            flex-grow: 1; /* 允许扩展 */
+        }
+        .comment-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #666;
+            text-align: center;
+        }
+        .comment-textarea {
+            width: 92%;
+            min-height: 400px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .save-comment-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .save-comment-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'letter_history' %}" class="back-button">← 返回目录</a>
+    <h1>CPNet-Read</h1>
+    
+    <div class="book-layout">
+        <!-- 新增左边栏 -->
+        <div class="left-sidebar">
+            <div class="comment-title">回应 & 锐评</div>
+            <form method="post" action="{% url 'letter_comment' letter.pk %}">
+                {% csrf_token %}
+                <textarea class="comment-textarea" name="comment">{{ letter.comment|default:"" }}</textarea>
+                <button type="submit" class="save-comment-btn">保存</button>
+            </form>
+        </div>
+        
+        <!-- 原有内容 -->
+        <div class="letter-container">
+            <div class="letter-title">{{ letter.title }}</div>
+            <div class="letter-author">收信人： {{ letter.recipient_email }}</div>
+            <div class="letter-sent-time">发送时间： {{ letter.sent_at|date:"Y年m月d日 H:i:s" }}</div>
+            <div class="letter-content">
+                {{ letter.content|safe }}
+            </div>
+            <div class="button-container">
+                {% if prev_letter %}
+                <a href="{% url 'letter_detail' prev_letter.pk %}" class="page-btn">上一页</a>
+                {% endif %}
+                <form method="post" action="{% url 'letter_delete' letter.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="delete-btn">删除</button>
+                </form>
+                {% if not letter.sent %}
+                <form method="post" action="{% url 'letter_send' letter.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="send-btn">发送</button>
+                </form>
+                {% else %}
+                <button class="send-btn disabled" disabled>已发送</button>
+                {% endif %}
+                {% if next_letter %}
+                <a href="{% url 'letter_detail' next_letter.pk %}" class="page-btn">下一页</a>
+                {% endif %}
+            </div>
+        </div>
+        <!-- 删除底部的重复翻页按钮 -->
+        <style>
+            .send-btn {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-top: 20px;
+            }
+            .send-btn:hover {
+                background-color: #45a049;
+            }
+            .send-btn.disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+            .button-container {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .page-btn {
+                padding: 8px 16px;
+                background-color: #af4c82;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+                margin-top: 20px;
+            }
+        </style>
+</body>
+</html>

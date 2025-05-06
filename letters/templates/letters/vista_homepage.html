@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .album-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+    .album-card {
+        background: #fff8f8;
+        border-radius: 15px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+    .album-card:hover {
+        transform: translateY(-5px);
+    }
+    .album-icon {
+        font-size: 3rem;
+        margin-bottom: 10px;
+        color: #ff85a2;
+    }
+    .add-album {
+        background: #f0f0f0;
+        border: 2px dashed #ccc;
+    }
+</style>
+
+<div class="album-container">
+    {% for album in albums %}
+    <div class="album-card" onclick="location.href='?album={{ album }}'">
+        <div class="album-icon">📁</div>
+        <h3>{{ album }}</h3>
+    </div>
+    {% endfor %}
+    <div class="album-card add-album" onclick="createAlbum()">
+        <div class="album-icon">➕</div>
+        <h3>新建相册</h3>
+    </div>
+</div>
+
+<script>
+function createAlbum() {
+    let name = prompt("请输入相册名称");
+    if(name) {
+        fetch('/create-album/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({name: name})
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                window.location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

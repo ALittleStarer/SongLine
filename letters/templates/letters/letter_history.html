@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>邮件历史</title>
+    <style>
+        body {
+            padding: 40px 20px;
+        }
+        .letter-list {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        .letter-item {
+            background-color: #f8f8f8;  /* 改为浅色背景 */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            color: #333;  /* 深色文字 */
+            text-decoration: none;  /* 移除链接下划线 */
+            display: block;  /* 确保整个区域可点击 */
+        }
+        .letter-item:hover {
+            background-color: #e0e0e0;  /* 悬停时稍深一点的灰色 */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .letter-item strong {
+            font-size: 1.2em;
+            color: #222;  /* 更深的标题颜色 */
+            line-height: 1.6;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .letter-item div {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>目录</h1>
+    {% if letters %}
+        <div class="letter-list">
+            {% for letter in letters %}
+                <a href="{% url 'letter_detail' letter.pk %}" class="letter-item">
+                    <div><strong>{{ letter.title }}</strong></div>
+                    <div>收信人: {{ letter.recipient_email }}</div>
+                    <div>发送时间: {{ letter.sent_at|date:"Y年m月d日 H:i:s" }}</div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>暂无邮件记录。</p>
+    {% endif %}
+    
+    <!-- 修改后的创建按钮 -->
+    <div style="
+        position: relative;
+        margin-top: -10px;
+        margin-left: 300px;
+        width: 60px;
+        height: 60px;
+    ">
+        <a href="{% url 'letter_create' %}" style="
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #f8f8f8;
+            color: #f765b3;
+            font-size: 45px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            line-height: 1;
+        ">+</a>
+    </div>
+</body>
+</html>

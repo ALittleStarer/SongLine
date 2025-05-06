@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>记录书信</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif; 
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #f0f0f0;
+            transform: translateX(-3px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ff69b4;
+            text-align: center;
+            font-family: 'SimSun', serif; 
+        }
+        p {
+            color: #49bff5;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'KaiTi', serif; 
+        }
+        form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            /* 模拟作文纸样式 */
+            background-image: linear-gradient(transparent 95%, #efd6c5 95%);
+            background-size: 100% 1.5em;
+            position: relative; /* 为按钮定位做准备 */
+        }
+        form p {
+            margin-bottom: 15px;
+        }
+        #title {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            height: 40px; 
+            margin-bottom: 15px;
+            /* 标题居中加粗，字体大 */
+            text-align: center;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        #recipient {
+            /* 修改宽度和高度 */
+            width: 300px; 
+            padding: 5px; 
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            height: 20px; 
+            margin-bottom: 15px;
+            /* 收件人靠边字体小 */
+            text-align: left;
+            font-size: 12px;
+        }
+        form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+            height: 400px; 
+            resize: vertical;
+            /* 模拟作文纸样式，正文内容和格子对齐输入 */
+            line-height: 1.5em;
+            font-size: 16px;
+            background: transparent;
+        }
+        form button {
+            background-color: #698cff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+            font-family: 'Microsoft YaHei', sans-serif; 
+        }
+        form button:hover {
+            background-color: #ff1493;
+        }
+        /* 移除历史信件样式 */
+        /* 隐藏字体选择下拉框 */
+        label[for="font-select"], #font-select {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'letter_history' %}" class="back-button">← 返回目录</a>
+    <h1>CPNet-Write</h1>
+    <form method="post" id="letter-form" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" id="image-upload" name="image" accept="image/*" style="display:none">
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // 使用手动指定的 ID 获取元素
+                const contentTextarea = document.getElementById('content-textarea');
+                if (contentTextarea) {
+                    contentTextarea.addEventListener('paste', function(e) {
+                        // 尝试获取剪贴板数据
+                        const clipboardData = e.clipboardData || window.clipboardData;
+                        if (clipboardData) {
+                            const items = clipboardData.items;
+                            for (let i = 0; i < items.length; i++) {
+                                const item = items[i];
+                                if (item.type.startsWith('image')) {
+                                    e.preventDefault(); // 阻止默认粘贴行为
+                                    const file = item.getAsFile();
+                                    if (file) {
+                                        try {
+                                            const dataTransfer = new DataTransfer();
+                                            dataTransfer.items.add(file);
+                                            document.getElementById('image-upload').files = dataTransfer.files;
+                                            
+                                            const reader = new FileReader();
+                                            reader.onload = function(event) {
+                                                const imgTag = `<img src="${event.target.result}" style="max-width:100%;">`;
+                                                // 将图片标签插入到文本框的当前光标位置
+                                                const start = contentTextarea.selectionStart;
+                                                const end = contentTextarea.selectionEnd;
+                                                const value = contentTextarea.value;
+                                                contentTextarea.value = value.substring(0, start) + imgTag + value.substring(end);
+                                                contentTextarea.focus();
+                                                contentTextarea.selectionStart = contentTextarea.selectionEnd = start + imgTag.length;
+                                            };
+                                            reader.readAsDataURL(file);
+                                        } catch (error) {
+                                            console.error('处理粘贴图片时出错:', error);
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    console.error('未找到内容文本框元素');
+                }
+            });
+        </script>
+        <!-- 移除图片上传按钮 -->
+        <!-- <button type="button" onclick="document.getElementById('image-upload').click()">插入图片</button> -->
+        <!-- 使用表单对象渲染标题字段 -->
+        <input type="text" id="{{ form.title.id_for_label }}" name="{{ form.title.html_name }}" placeholder="标题" required value="{{ form.title.value|default:'' }}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px; box-sizing: border-box; height: 40px; text-align: center; font-weight: bold; font-size: 24px; margin-bottom: 15px;">
+        <!-- 使用表单对象渲染收件人字段 -->
+        <input type="text" id="{{ form.recipient_email.id_for_label }}" name="{{ form.recipient_email.html_name }}" placeholder="收件人" required value="{{ form.recipient_email.value|default:'' }}" style="width: 300px; padding: 5px; border: 1px solid #ddd; border-radius: 3px; box-sizing: border-box; height: 20px; text-align: left; font-size: 12px; margin-bottom: 15px;">
+        <!-- 图片上传字段 -->
+        <!-- 移除图片上传字段 -->
+        <!-- <input type="file" id="id_image" name="image" accept="image/*" style="margin-bottom: 15px;"> -->
+        <!-- 使用表单对象渲染内容字段，并手动指定 ID -->
+        <textarea id="content-textarea" name="{{ form.content.html_name }}" placeholder="请输入内容" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 3px; box-sizing: border-box; height: 400px; resize: vertical; line-height: 1.5em; font-size: 16px; background: transparent;">{{ form.content.value|default:'' }}</textarea>
+        <input type="hidden" id="signature-time">
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+            <button type="submit" name="save" class="btn btn-primary">仅保存</button>
+            <button type="submit" name="send" class="btn btn-success">保存并发送</button>
+        </div>
+    </form>
+</body>
+</html>

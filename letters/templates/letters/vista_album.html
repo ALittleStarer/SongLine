@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .photo-viewer {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .photo-container {
+        max-width: 600px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .photo-nav {
+        margin-top: 20px;
+    }
+
+    .photo-nav button {
+        background: #ff85a2;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        margin: 0 10px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .photo-counter {
+        margin-top: 10px;
+        color: #888;
+    }
+</style>
+
+<div class="photo-viewer">
+    <div style="text-align:left; margin-bottom:20px;">
+        <button onclick="window.location.href='{% url 'vista_homepage' %}'" 
+                style="background:#888; padding:8px 16px;">
+            ← 返回相册目录
+        </button>
+    </div>
+    <h2>{{ album }}相册</h2>
+    <div class="photo-container">
+        {% if current_image %}
+        <img src="{{ MEDIA_URL }}/vista/{{ album }}/{{ current_image }}"
+            style="max-width:100%; border-radius:10px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        <div style="margin-top:10px;">
+            <button onclick="deletePhoto('{{ current_image }}')" style="background:#ff6b6b;">删除照片</button>
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:50px;">
+            <button onclick="showUploadForm()" style="font-size:24px; padding:15px 30px;">
+                + 添加第一张图片
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    <div class="photo-nav">
+        <button onclick="prevPhoto()">上一张</button>
+        {% if current == total|add:-1 %}
+        <button onclick="showUploadForm()">上传图片</button>
+        {% else %}
+        <button onclick="nextPhoto()">下一张</button>
+        {% endif %}
+    </div>
+    <div id="uploadForm"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:10px;">
+        <h3>上传图片到 {{ album }}</h3>
+        <form method="post" enctype="multipart/form-data" action="{% url 'vista_homepage' %}?album={{ album }}" id="uploadFormElement">
+            {% csrf_token %}
+            <input type="file" name="photo" multiple required>
+            <button type="submit">上传</button>
+            <button type="button" onclick="hideUploadForm()">取消</button>
+        </form>
+    </div>
+
+    <script>
+        function showUploadForm() {
+            document.getElementById('uploadForm').style.display = 'block';
+        }
+        function hideUploadForm() {
+            document.getElementById('uploadForm').style.display = 'none';
+        }
+    </script>
+    <div class="photo-counter">
+        {{ current|add:1 }} / {{ total }}
+    </div>
+</div>
+
+<script>
+    function prevPhoto() {
+        window.location.href = `?album={{ album }}&current=${Math.max(0, {{ current }} - 1)}`;
+    }
+    function nextPhoto() {
+        window.location.href = `?album={{ album }}&current=${Math.min({{ total }} - 1, {{ current }} + 1)}`;
+    }
+</script>
+<script>
+function deletePhoto(filename) {
+    if(confirm('确定要删除这张照片吗？')) {
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `delete=true&filename=${encodeURIComponent(filename)}`
+        }).then(response => response.json())
+          .then(data => {
+              if(data.status === 'success') {
+                  window.location.reload();
+              }
+          });
+    }
+}
+</script>
+<script>
+document.getElementById('uploadFormElement').addEventListener('submit', function(e) {
+    e.preventDefault();
+    let formData = new FormData(this);
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    }).then(response => response.json())
+      .then(data => {
+          if(data.status === 'success') {
+              window.location.reload();
+          }
+      });
+});
+</script>
+{% endblock %}

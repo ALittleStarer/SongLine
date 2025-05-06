@@ -1,0 +1,50 @@
+Using selector: EpollSelector
+Using selector: EpollSelector
+VisitTrackerMiddleware processing request
+Recording visit from IP: 167.94.146.63
+VisitTrackerMiddleware processing request
+Recording visit from IP: 167.94.146.63
+VisitTrackerMiddleware processing request
+Recording visit from IP: 167.94.146.63
+Not Found: /favicon.ico
+Invalid HTTP_HOST header: '0.0.0.0:8000'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Bad Request: /*
+VisitTrackerMiddleware processing request
+Recording visit from IP: 167.94.146.63
+Not Found: /favicon.ico
+Invalid HTTP_HOST header: 'bqw.hulianwgj.com:8000'. You may need to add 'bqw.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: 'bqw.hulianwgj.com:8000'. You may need to add 'bqw.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Using selector: EpollSelector
+Using selector: EpollSelector
+Invalid HTTP_HOST header: 'status.hulianwgj.com:8000'. You may need to add 'status.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: 'status.hulianwgj.com:8000'. You may need to add 'status.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+VisitTrackerMiddleware processing request
+Recording visit from IP: 162.62.132.25
+Invalid HTTP_HOST header: 'pingjs.qq.com'. You may need to add 'pingjs.qq.com' to ALLOWED_HOSTS.
+Bad Request: /ping.js
+Invalid HTTP_HOST header: 'status.hulianwgj.com:8000'. You may need to add 'status.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: 'status.hulianwgj.com:8000'. You may need to add 'status.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Invalid HTTP_HOST header: 'bsn.hulianwgj.com'. You may need to add 'bsn.hulianwgj.com' to ALLOWED_HOSTS.
+Bad Request: /
+Using selector: EpollSelector
+Using selector: EpollSelector
+Using selector: EpollSelector
+VisitTrackerMiddleware processing request
+Recording visit from IP: 43.166.251.233
+Using selector: EpollSelector
+VisitTrackerMiddleware processing request
+Recording visit from IP: 139.226.50.66
+Using selector: EpollSelector
+VisitTrackerMiddleware processing request
+Recording visit from IP: 139.226.50.66
+VisitTrackerMiddleware processing request
+Recording visit from IP: 139.226.50.66
+VisitTrackerMiddleware processing request
+Recording visit from IP: 205.210.31.35
+Using selector: EpollSelector

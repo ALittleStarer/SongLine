@@ -1,0 +1,659 @@
+{% load custom_tags %}
+{% now "Y-m-d" as today_date %}
+
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<!-- 添加、修改和删除按钮 -->
+
+<style>
+    .add-button {
+        margin: 20px 0;
+        padding: 10px 20px;
+        background-color: #ff9a9e;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(255, 154, 158, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .add-button:hover {
+        background-color: #ff7b81;
+        transform: translateY(-2px);
+    }
+
+    .delete-button {
+        position: absolute;
+        top: 2px;
+        right: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        z-index: 1;
+        line-height: 1;
+        background-color: rgba(0,0,0,0.2);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<!-- 修改后的添加日程模态框 -->
+<div id="addModal" class="modal" style="z-index: 1002;">
+    <div class="modal-content" style="margin: 100px auto;">
+        <span class="close" onclick="closeAddModal()">&times;</span>
+        <h2>✨ 添加新日程 ✨</h2>
+        <label for="addDay">星期几</label>
+        <input type="number" id="addDay" min="1" max="7" placeholder="1-7 (周一至周日)">
+        
+        <label for="addStart">开始时间</label>
+        <input type="time" id="addStart">
+        
+        <label for="addEnd">结束时间</label>
+        <input type="time" id="addEnd">
+        
+        <label for="addTitle">日程标题</label>
+        <input type="text" id="addTitle" placeholder="输入日程内容">
+        
+        <button onclick="addSchedule()">保存日程</button>
+    </div>
+</div>
+
+<!-- 修改后的编辑日程模态框 -->
+<div id="editModal" class="modal" style="z-index: 1002;">
+    <div class="modal-content" style="margin: 100px auto;">
+        <span class="close" onclick="closeEditModal()">&times;</span>
+        <h2>✏️ 编辑日程 ✏️</h2>
+        <input type="hidden" id="editIndex">
+        
+        <label for="editDay">星期几</label>
+        <input type="number" id="editDay" min="1" max="7">
+        
+        <label for="editStart">开始时间</label>
+        <input type="time" id="editStart">
+        
+        <label for="editEnd">结束时间</label>
+        <input type="time" id="editEnd">
+        
+        <label for="editTitle">日程标题</label>
+        <input type="text" id="editTitle">
+        
+        <button onclick="updateSchedule()">更新日程</button>
+    </div>
+</div>
+
+<!-- 在body开始处添加左侧待办区域 -->
+<!-- 修改添加待办按钮的样式 -->
+<div style="position: fixed; left: 20px; top: 20px; width: 250px; z-index: 1000;">
+    <div style="margin-bottom: 10px; display: flex; align-items: center;">
+        <button onclick="showAddTodoModal()" class="add-button" style="margin: 0;">+ 添加待办</button>
+    </div>
+    <div id="todo-list" style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); height: 80vh; overflow-y: auto;">
+        <!-- 待办事项将在这里动态生成 -->
+    </div>
+</div>
+<!-- 修改添加日程按钮的样式 -->
+<div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+    <button onclick="showAddModal()" class="add-button" style="margin: 0;">+ 添加日程</button>
+</div>
+<!-- 日程表容器 -->
+<div id="schedule-container">
+    <div id="time-column" style="display: none;">
+        <!-- 空单元格用于占位 -->
+        <div class="time-slot"></div>
+        <!-- 时间列，调整为 1 小时粒度 -->
+        {% with hours=24|custom_range %}
+            {% for _ in hours %}
+                {% with hour=forloop.counter0 %}
+                    <div class="time-slot">{{ hour }}:00</div>
+                {% endwith %}
+            {% endfor %}
+        {% endwith %}
+    </div>
+    <div id="schedule-content">
+        {% with today=today_date|make_date %}
+            {% for i in '0123456'|make_list %}
+                {% with date=today|add_days:i %}
+                    {% with weekday=date.weekday %} 
+                        {% with adjusted_weekday=weekday|add:1|modulo:7 %} 
+                            {% with weekday_chinese=adjusted_weekday|get_weekday_chinese %}
+                                <div class="day-column">
+                                    <!-- 日期标题 -->
+                                    <div class="day-header">
+                                        <div class="weekday">{{ weekday_chinese }}</div>
+                                        <div class="date">
+                                            {{ date|date:"Y-m-d" }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                {% endwith %}
+            {% endfor %}
+        {% endwith %}
+    </div>
+</div>
+
+<!-- 样式 -->
+<style>
+    body {
+        display: flex;
+        justify-content: flex-end;
+        padding-right: 20px;
+        padding-left: 290px; /* 增加左边距 */
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f5f5f5;
+    }
+
+    #schedule-container {
+        display: flex;
+        margin-top: 60px; /* 与待办列表的 top 值 + 按钮高度保持一致 */
+        position: relative;
+        width: 90%;
+        height: 85vh;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #schedule-content {
+        flex: 1;
+        display: flex;
+        border: none;
+        height: calc(100% - 60px);
+        background-color: #ffffff;
+    }
+
+    .time-slot {
+        height: calc((75vh - 60px) / 24);
+        line-height: calc((75vh - 60px) / 24);
+        text-align: right;
+        padding-right: 10px;
+        color: #666666; /* 柔和的文字颜色 */
+    }
+
+    #schedule-content {
+        flex: 1;
+        display: flex;
+        border: none; /* 移除原有边框 */
+        height: 75vh;
+        background-color: #ffffff; /* 白色背景 */
+    }
+
+    .day-column {
+        flex: 1;
+        border-right: 1px solid #e0e0e0; /* 更柔和的分割线颜色 */
+        position: relative;
+    }
+
+    .day-column:first-child {
+        border-left: none;
+    }
+
+    .day-header {
+        height: 60px;
+        line-height: 60px;
+        text-align: center;
+        border-bottom: 1px solid #e0e0e0;
+        border-left: 1px solid #e0e0e0;
+        border-right: 1px solid #e0e0e0;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        background-color: #f8f9fa; /* 淡灰色背景 */
+    }
+
+    .weekday {
+        flex: 1;
+        line-height: 30px;
+        color: #333333; /* 深色文字 */
+    }
+
+    .date-with-underline {
+        flex: 1;
+        line-height: 30px;
+        text-decoration: underline;
+        color: #333333; /* 深色文字 */
+    }
+
+    .schedule-item {
+        position: relative;
+        opacity: 0.9;
+        border-radius: 6px;
+        color: whitesmoke;
+        padding: 15px 8px 3px 8px;  /* 增加顶部内边距，为叉按钮留出空间 */
+        box-sizing: border-box;
+        left: 5px;
+        right: 5px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        font-size: 12px; /* 固定字体大小 */
+        font-family: 'Kalam', cursive; /* 使用可爱字体 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.4;  /* 调整行高 */
+        white-space: normal; /* 允许换行 */
+    }
+</style>
+
+<!-- 脚本 -->
+<script>
+    // 显示添加模态框
+    function showAddModal() {
+        document.getElementById('addModal').style.display = "block";
+    }
+
+    // 关闭添加模态框
+    function closeAddModal() {
+        document.getElementById('addModal').style.display = "none";
+    }
+
+    // 添加日程
+    function addSchedule() {
+        const day = parseInt(document.getElementById('addDay').value);
+        const start = document.getElementById('addStart').value;
+        const end = document.getElementById('addEnd').value;
+        const title = document.getElementById('addTitle').value;
+
+        if (day && start && end && title) {
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `action=add&day=${day}&start=${start}&end=${end}&title=${title}`
+            })
+           .then(response => response.json())
+           .then(data => {
+                if (data.success) {
+                    schedules.push({ id: data.id, day, start, end, title });
+                    closeAddModal();
+                    clearSchedules();
+                    renderSchedules();
+                }
+            });
+        }
+    }
+
+    // 修改日程
+    function updateSchedule() {
+        const index = parseInt(document.getElementById('editIndex').value);
+        const day = parseInt(document.getElementById('editDay').value);
+        const start = document.getElementById('editStart').value;
+        const end = document.getElementById('editEnd').value;
+        const title = document.getElementById('editTitle').value;
+        const schedule = schedules[index];
+
+        if (index >= 0 && day && start && end && title) {
+            fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `action=edit&index=${schedule.id}&day=${day}&start=${start}&end=${end}&title=${title}`
+            })
+           .then(response => response.json())
+           .then(data => {
+                if (data.success) {
+                    schedules[index] = { id: schedule.id, day, start, end, title };
+                    closeEditModal();
+                    clearSchedules();
+                    renderSchedules();
+                }
+            });
+        }
+    }
+
+    // 删除日程
+    function deleteSchedule(index) {
+        const schedule = schedules[index];
+        fetch('', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: `action=delete&index=${schedule.id}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    schedules.splice(index, 1);
+                    clearSchedules();
+                    renderSchedules();
+                }
+            });
+    }
+
+    function getCookie(name) {
+        let value = "; " + document.cookie;
+        let parts = value.split("; " + name + "=");
+        if (parts.length === 2) return parts.pop().split(";").shift();
+    }
+
+    // 清除所有日程
+    function clearSchedules() {
+        const scheduleContent = document.getElementById('schedule-content');
+        const dayColumns = scheduleContent.querySelectorAll('.day-column');
+        dayColumns.forEach(column => {
+            // 只移除日程项，保留标题
+            const scheduleItems = column.querySelectorAll('.schedule-item');
+            scheduleItems.forEach(item => item.remove());
+        });
+    }
+
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    // 显示修改模态框
+    function showEditModal(index) {
+        const schedule = schedules[index];
+        document.getElementById('editIndex').value = index;
+        document.getElementById('editDay').value = schedule.day;
+        document.getElementById('editStart').value = schedule.start;
+        document.getElementById('editEnd').value = schedule.end;
+        document.getElementById('editTitle').value = schedule.title;
+        document.getElementById('editModal').style.display = "block";
+    }
+
+    // 关闭修改模态框
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = "none";
+    }
+
+    // 在renderSchedules函数中添加字体大小计算
+    function renderSchedules() {
+        const scheduleContent = document.getElementById('schedule-content');
+        const dayColumns = scheduleContent.querySelectorAll('.day-column');
+        const totalHeight = scheduleContent.offsetHeight - 60; // 减去标题高度
+        const pixelsPerMinute = totalHeight / (24 * 60);
+    
+        schedules.forEach((schedule, index) => {
+            const startMinutes = convertTimeToMinutes(schedule.start);
+            const endMinutes = convertTimeToMinutes(schedule.end);
+            const duration = endMinutes - startMinutes;
+            const dayIndex = schedule.day - 1;
+    
+            const item = document.createElement('div');
+            item.className = 'schedule-item';
+            item.style.top = `${startMinutes * pixelsPerMinute + 60}px`;
+    
+            // 固定字体大小
+            item.style.fontSize = '16px';
+    
+            // 修改日程格式
+            const content = `${schedule.start} - ${schedule.end}<br>${schedule.title}`;
+            item.innerHTML = content;
+    
+            // 创建一个临时元素来计算内容所需的高度
+            const tempItem = document.createElement('div');
+            tempItem.className = 'schedule-item';
+            tempItem.style.visibility = 'hidden';
+            tempItem.style.position = 'absolute';
+            tempItem.innerHTML = content;
+            document.body.appendChild(tempItem);
+    
+            // 适当减小最小高度
+            const minHeight = Math.max(tempItem.offsetHeight * 0.8, 30); 
+            document.body.removeChild(tempItem);
+    
+            // 确保日程高度足够展示内容
+            const itemHeight = Math.max(duration * pixelsPerMinute, minHeight);
+            item.style.height = `${itemHeight}px`;
+    
+            // 优化背景颜色，选择对比度更高的颜色
+            item.style.backgroundColor = getContrastColor();
+            item.onclick = () => showEditModal(index);
+    
+            // 添加删除按钮
+            const deleteButton = document.createElement('div');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = '×';
+            deleteButton.style.position = 'absolute';
+            deleteButton.style.top = '2px';
+            deleteButton.style.right = '5px';
+            deleteButton.onclick = (e) => {
+                e.stopPropagation();
+                deleteSchedule(index);
+            };
+            item.appendChild(deleteButton);
+    
+            dayColumns[dayIndex].appendChild(item);
+        });
+    }
+
+    // 优化背景颜色生成函数，使用更深的颜色，移除亮黄色
+    function getContrastColor() {
+        const darkColors = [
+            '#FF6B6B', '#4ECDC4', '#1A535C', '#8367C7',
+            '#364F6B', '#FC5185', '#3FC1C9', '#52616B', '#F08A5D'
+        ];
+        return darkColors[Math.floor(Math.random() * darkColors.length)];
+    }
+
+    function convertTimeToMinutes(time) {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+// 在脚本开头添加
+let todos = [];
+
+// 添加待办相关函数
+function showAddTodoModal() {
+    document.getElementById('addTodoModal').style.display = "block";
+}
+
+function closeAddTodoModal() {
+    document.getElementById('addTodoModal').style.display = "none";
+}
+
+function addTodo() {
+    const title = document.getElementById('todoTitle').value;
+    if (title) {
+        fetch('/todo_operations/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: `action=add_todo&title=${encodeURIComponent(title)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                todos.push({ id: data.id, title });
+                closeAddTodoModal();
+                renderTodos();
+            }
+        });
+    }
+}
+
+function deleteTodo(id) {
+    fetch('/todo_operations/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: `action=delete_todo&id=${id}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            todos = todos.filter(todo => todo.id !== id);
+            renderTodos();
+        }
+    });
+}
+
+function renderTodos() {
+    const todoList = document.getElementById('todo-list');
+    todoList.innerHTML = '';
+    
+    todos.forEach(todo => {
+        const item = document.createElement('div');
+        item.style.padding = '10px';
+        item.style.margin = '8px 0';
+        item.style.background = '#fff5f7';
+        item.style.borderRadius = '8px';
+        item.style.display = 'flex';
+        item.style.justifyContent = 'space-between';
+        item.style.alignItems = 'center';
+        item.style.boxShadow = '0 2px 4px rgba(255, 105, 140, 0.2)';
+        
+        const text = document.createElement('span');
+        text.textContent = todo.title;
+        text.style.color = '#ff6b88';
+        item.appendChild(text);
+        
+        const deleteBtn = document.createElement('span');
+        deleteBtn.textContent = '×';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.color = '#ff6b88';
+        deleteBtn.style.fontWeight = 'bold';
+        deleteBtn.style.fontSize = '18px';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteTodo(todo.id);
+        };
+        item.appendChild(deleteBtn);
+        
+        todoList.appendChild(item);
+    });
+}
+
+// 修改window.onload函数
+window.onload = function() {
+    // 加载日程
+    fetch('{% url "schedule_operations" %}')
+       .then(response => response.json())
+       .then(data => {
+            schedules = data;
+            clearSchedules();
+            renderSchedules();
+        });
+    
+    // 加载待办事项
+    fetch('/todo_operations/')
+       .then(response => response.json())
+       .then(data => {
+            todos = data;
+            renderTodos();
+        });
+};
+</script>
+
+<style>
+    /* 模态框样式 */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fff5f7;
+        border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(255, 105, 140, 0.3);
+        width: 400px;
+        padding: 25px;
+    }
+
+    .modal h2 {
+        color: #ff6b88;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .modal label {
+        display: block;
+        margin: 15px 0 5px;
+        color: #ff8fab;
+        font-weight: bold;
+    }
+
+    .modal input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ffc2d1;
+        border-radius: 8px;
+        background-color: #fff;
+    }
+
+    .modal button {
+        background-color: #ff8fab;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        margin-top: 20px;
+        width: 100%;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .modal button:hover {
+        background-color: #ff6b88;
+        transform: translateY(-2px);
+    }
+</style>
+
+<style>
+    #schedule-container {
+        background-color: #faf3f3;
+        border-radius: 15px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-header {
+        background-color: #ffd1dc;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .weekday {
+        color: #ff6b88;
+        font-weight: bold;
+    }
+
+    .date {
+        color: #ff6b88;
+    }
+</style>
+
+<!-- 在现有模态框后添加 -->
+<div id="addTodoModal" class="modal" style="z-index: 1001;">
+    <div class="modal-content" style="margin: 100px auto;">
+        <span class="close" onclick="closeAddTodoModal()">&times;</span>
+        <h2>✨ 添加新待办 ✨</h2>
+        <label for="todoTitle">待办内容</label>
+        <input type="text" id="todoTitle" placeholder="输入待办事项">
+        <button onclick="addTodo()">保存</button>
+    </div>
+</div>
