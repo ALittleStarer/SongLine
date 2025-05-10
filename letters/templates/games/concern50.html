@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>专注力测试游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(60px, 1fr));
+            grid-template-rows: repeat(5, minmax(60px, 1fr));
+            gap: 10px;
+            margin: 20px auto;
+            width: 90%;
+            max-width: 500px;
+        }
+        .cell {
+            aspect-ratio: 1/1;  /* 新增这行确保宽高比1:1 */
+            min-width: 60px;
+            min-height: 60px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+        .cell.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #timer {
+            font-size: 24px;
+            margin: 20px;
+        }
+        #start-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #next-number {
+            font-size: 24px;
+            margin: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>专注力测试游戏</h1>
+    <p>按顺序点击1-50的数字</p>
+    <div id="timer">时间: 0秒</div>
+    <div id="next-number">下一个数字: 1</div>
+    <button id="start-btn">开始游戏</button>
+    <div id="game-board"></div>
+
+    <script>
+        const board = document.getElementById('game-board');
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        let currentNumber = 1;
+        let startTime;
+        let timerInterval;
+        let numbers = Array.from({length: 50}, (_, i) => i + 1);
+        let nextReplacement = 26; // 下一个要替换的数字
+
+        // 初始化游戏板
+        function initBoard() {
+            board.innerHTML = '';
+            const initialNumbers = numbers.slice(0, 25);
+            shuffleArray(initialNumbers);
+            initialNumbers.forEach(num => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = num;
+                cell.addEventListener('click', handleCellClick);
+                board.appendChild(cell);
+            });
+        }
+
+        let gameRecords = []; // 存储游戏记录
+
+        // 更新下一个数字显示
+        function updateNextNumber() {
+            document.getElementById('next-number').textContent = `下一个数字: ${currentNumber}`;
+        }
+
+        // 开始游戏
+        startBtn.addEventListener('click', () => {
+            currentNumber = 1;
+            nextReplacement = 26;  // 添加这行重置替换数字
+            initBoard();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+            startBtn.style.display = 'none';
+        });
+
+        // 处理单元格点击
+        function handleCellClick(e) {
+            const clickedNum = parseInt(e.target.textContent);
+            if (clickedNum === currentNumber) {
+                if (currentNumber <= 25) {
+                    e.target.textContent = nextReplacement;
+                    nextReplacement++;
+                    e.target.style.visibility = 'visible';
+                } else {
+                    if (currentNumber <= 50) {
+                        e.target.style.visibility = 'hidden';
+                    }
+                }
+                currentNumber++;
+                updateNextNumber();
+                
+                if (currentNumber > 50) {
+                    clearInterval(timerInterval);
+                    const endTime = Date.now();
+                    const totalTime = ((endTime - startTime) / 1000).toFixed(2);
+                    gameRecords.push(totalTime);
+                    alert(`恭喜完成！用时: ${totalTime}秒\n历史记录: ${gameRecords.join(', ')}秒`);
+                    // 完全重置游戏状态
+                    currentNumber = 1;
+                    nextReplacement = 26;
+                    updateNextNumber();  // 更新提示为"下一个数字: 1"
+                    startBtn.disabled = false;
+                    startBtn.style.display = 'block';
+                }
+            }
+        }
+
+        // 更新计时器
+        function updateTimer() {
+            const currentTime = Date.now();
+            const elapsed = ((currentTime - startTime) / 1000).toFixed(1);
+            timerDisplay.textContent = `时间: ${elapsed}秒`;
+        }
+
+        // 随机打乱数组
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+    </script>
+</body>
+</html>

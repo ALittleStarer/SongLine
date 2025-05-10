@@ -151,11 +151,21 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 10MB
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'ignore_disallowed_host': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: not (
+                'django.security.DisallowedHost' in str(record.exc_info[0]) 
+                if record.exc_info else False
+            )
+        }
+    },
     'handlers': {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),  # 改为项目目录下的相对路径
+            'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
+            'filters': ['ignore_disallowed_host']
         },
     },
     'root': {
@@ -176,3 +186,5 @@ CSRF_TRUSTED_ORIGINS = [
     'http://106.15.40.180',
     'http://106.15.40.180:8000'
 ]
+
+TRACKING_DOMAIN = 'http://106.15.40.180:8000'

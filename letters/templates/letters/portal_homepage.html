@@ -70,6 +70,25 @@
     }
 </style>
 
+<div class="role-switcher">
+    <button class="role-btn" data-role="M">男方视角</button>
+    <button class="role-btn" data-role="F">女方视角</button>
+    
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <form id="roleForm" action="{% url 'switch_role' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="role" id="selectedRole">
+                <div class="input-group">
+                    <label for="password">请输入密码</label>
+                    <input type="password" name="password" id="password" required>
+                </div>
+                <button type="submit">确认</button>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="portal-container">
     <div class="portal-header">
         <h1>Song Line</h1>
@@ -95,13 +114,13 @@
             <h3>VISTA</h3>
             <p>迷人景致</p>
         </a>
-
-        <!-- 预留未来扩展位置 -->
-        <div class="module-card placeholder">
+        
+        <a href="{% url 'chat_cat_homepage' %}" class="module-card">
             <div class="module-icon">🐱</div>
             <h3>CHATCAT</h3>
             <p>是的妈妈，我会说话</p>
-        </div>
+        </a>
+        <!-- 预留未来扩展位置 -->
 
         <div class="module-card placeholder">
             <div class="module-icon">🔮</div>
@@ -235,6 +254,27 @@
     .sun-btn { background: #fdcb6e; }
     .star-btn { background: #6c5ce7; color: white; }
     .cozy-btn { background: #e17055; color: white; }
+    .role-switcher {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    #showRoleSwitcher {
+        padding: 8px 16px;
+        background-color: #ff6b88;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Comic Sans MS', cursive;
+    }
+
+    .role-switcher button:hover {
+        background-color: #ff4757;
+        transform: translateY(-2px);
+    }
 </style>
 
 <script>
@@ -330,5 +370,77 @@
         }
     }
 </style>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(232,202,214,0.8);
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 12px;
+        width: 300px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .input-group {
+        margin: 20px 0;
+    }
+    
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #ff6b88;
+        font-family: 'Comic Sans MS', cursive;
+    }
+    
+    .input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ffb6c1;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+    
+    .close {
+        float: right;
+        cursor: pointer;
+        font-size: 24px;
+        color: #ff6b88;
+    }
+</style>
+
+<script>
+const modal = document.getElementById('passwordModal');
+const roleBtns = document.querySelectorAll('.role-btn');
+const selectedRole = document.getElementById('selectedRole');
+const closeBtn = document.querySelector('.close');
+
+roleBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        selectedRole.value = this.dataset.role;
+        modal.style.display = 'block';
+    });
+});
+
+closeBtn.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
 
 {% endblock %}

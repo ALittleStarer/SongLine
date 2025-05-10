@@ -2,10 +2,12 @@ from django.urls import path
 from .letter_views import *
 from .schedule_todo_views import *
 from .vista_views import *
-from .views import portal_homepage
+from .chat_views import chat_cat_homepage
+from .views import *
 
 urlpatterns = [
     path('', portal_homepage, name='portal_homepage'),
+    path('chat-cat/', chat_cat_homepage, name='chat_cat_homepage'),
     path('vista/', vista_homepage, name='vista_homepage'),
     path('create-album/', create_album, name='create_album'),
     path('todo_operations/', todo_operations, name='todo_operations'),
@@ -17,6 +19,10 @@ urlpatterns = [
     path('clear-history/', clear_letter_history, name='clear_letter_history'),
     path('delete/<int:pk>/', letter_delete, name='letter_delete'),
     path('send/<int:pk>/', letter_send, name='letter_send'),
+    path('track/<int:pk>/', track_email, name='track_email'),
     path('letter/<int:pk>/comment/', letter_comment, name='letter_comment'),
     path('schedule_operations/', schedule_operations, name='schedule_operations'),
+    path('chat/', ai_chat_view, name='ai_chat'),
+    path('concern50/', concern50_game, name='concern50-game'),
+    path('switch-role/', switch_role, name='switch_role'),
 ]

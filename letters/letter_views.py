@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse  # 添加这行导入
 from .models import Letter
 from .forms import LetterForm
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.utils.html import strip_tags
+from django.utils import timezone  # Add this import
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,9 @@ def letter_create(request):
             try:
                 if 'send' in request.POST:
                     html_content = letter.content.replace('\n', '<br>')
+                    letter.save()  
+                    tracking_pixel = f'<img src="{settings.TRACKING_DOMAIN}/track/{letter.id}/" width="1" height="1" style="display:none">'
+                    html_content += tracking_pixel
                     email = EmailMultiAlternatives(
                         letter.title,
                         strip_tags(letter.content),
@@ -27,8 +32,9 @@ def letter_create(request):
                     )
                     email.attach_alternative(html_content, "text/html")
                     email.send(fail_silently=False)
+                    # 合并sent状态更新到前面的save()中
                     letter.sent = True
-                    letter.save()
+                    letter.save(update_fields=['sent'])  # 只更新sent字段
                     return redirect('letter_success')
                 else:  # 添加仅保存的明确处理
                     logger.info("here2")
@@ -54,6 +60,9 @@ def letter_send(request, pk):
     letter = get_object_or_404(Letter, pk=pk)
     if not letter.sent:
         html_content = letter.content.replace('\n', '<br>')
+        tracking_pixel = f'<img src="{settings.TRACKING_DOMAIN}/track/{letter.id}/" width="1" height="1" style="display:none">'
+        html_content += tracking_pixel
+        
         email = EmailMultiAlternatives(
             letter.title,
             strip_tags(letter.content),
@@ -99,3 +108,23 @@ def letter_comment(request, pk):
 def clear_letter_history(request):
     Letter.objects.all().delete()
     return redirect('letter_history')
+
+def track_email(request, pk):
+    letter = get_object_or_404(Letter, pk=pk)
+    client_ip = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+    
+    # 检查该IP最近一次记录时间
+    last_record = next((entry for entry in reversed(letter.opened_ips) 
+                       if entry['ip'] == client_ip), None)
+    
+    # 如果上次记录超过30秒，则记录新条目
+    if not last_record or (timezone.now() - timezone.datetime.fromisoformat(last_record['time'])).total_seconds() > 30:
+        letter.is_opened = True
+        letter.opened_at = timezone.now()
+        letter.last_opened_ip = client_ip
+        letter.opened_ips.append({
+            'ip': client_ip,
+            'time': timezone.now().isoformat()
+        })
+        letter.save()
+    return HttpResponse(status=204)
