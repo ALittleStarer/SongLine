@@ -70,88 +70,94 @@
     }
 </style>
 
-<div class="role-switcher">
-    <button class="role-btn" data-role="M">男方视角</button>
-    <button class="role-btn" data-role="F">女方视角</button>
-    
-    <div id="passwordModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <form id="roleForm" action="{% url 'switch_role' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="role" id="selectedRole">
-                <div class="input-group">
-                    <label for="password">请输入密码</label>
-                    <input type="password" name="password" id="password" required>
-                </div>
-                <button type="submit">确认</button>
-            </form>
-        </div>
-    </div>
-</div>
 <div class="portal-container">
     <div class="portal-header">
         <h1>Song Line</h1>
-    </div>
-    
-    <div class="module-grid">
-        <!-- 信件模块 -->
-        <a href="{% url 'letter_history' %}" class="module-card">
-            <div class="module-icon">🕊️</div>
-            <h3>CP-NET</h3>
-            <p>Carrior Pigeon</p>
-        </a>
-        
-        <!-- 日程待办模块 -->
-        <a href="{% url 'cpnet_homepage' %}" class="module-card">
-            <div class="module-icon">📅</div>
-            <h3>KALAM</h3>
-            <p>TODO & Schedule</p>
-        </a>
-        
-        <a href="{% url 'vista_homepage' %}" class="module-card">
-            <div class="module-icon">⛰️</div>
-            <h3>VISTA</h3>
-            <p>迷人景致</p>
-        </a>
-        
-        <a href="{% url 'chat_cat_homepage' %}" class="module-card">
-            <div class="module-icon">🐱</div>
-            <h3>CHATCAT</h3>
-            <p>是的妈妈，我会说话</p>
-        </a>
-        <!-- 预留未来扩展位置 -->
-
-        <div class="module-card placeholder">
-            <div class="module-icon">🔮</div>
-            <h3>ASTRA</h3>
-            <p>命问星天</p>
+        <div class="gender-login">
+            <div class="gender-option male role-btn" data-role="M">
+                <div class="gender-image {% if not male_profile.is_online %}offline{% endif %}"></div>
+                <div class="gender-label">Male</div>
+            </div>
+            <div class="gender-option female role-btn" data-role="F">
+                <div class="gender-image {% if not female_profile.is_online %}offline{% endif %}"></div>
+                <div class="gender-label">Female</div>
+            </div>
         </div>
 
-        <div class="module-card placeholder">
-            <div class="module-icon">📃</div>
-            <h3>PROFILE</h3>
-            <p>今日方知我是我</p>
+        <!-- 在gender-login区域后添加 -->
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="roleForm" method="post" action="{% url 'switch_role' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="selectedRole" name="role">
+                    <div class="input-group">
+                        <label for="password">请输入密码</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="theme-btn">登录</button>
+                </form>
+            </div>
         </div>
         
-        <div class="module-card placeholder">
-            <div class="module-icon">🪄</div>
-            <h3>KA-TOOL</h3>
-            <p>卡子的百宝箱</p>
-        </div>
+        <div class="module-grid">
+            <!-- 信件模块 -->
+            <a href="{% url 'letter_history' %}" class="module-card">
+                <div class="module-icon">🕊️</div>
+                <h3>CP-NET</h3>
+                <p>Carrior Pigeon</p>
+            </a>
+            
+            <!-- 日程待办模块 -->
+            <a href="{% url 'cpnet_homepage' %}" class="module-card">
+                <div class="module-icon">📅</div>
+                <h3>KALAM</h3>
+                <p>TODO & Schedule</p>
+            </a>
+            
+            <a href="{% url 'vista_homepage' %}" class="module-card">
+                <div class="module-icon">⛰️</div>
+                <h3>VISTA</h3>
+                <p>迷人景致</p>
+            </a>
+            
+            <a href="{% url 'chat_cat_homepage' %}" class="module-card">
+                <div class="module-icon">🐱</div>
+                <h3>CHATCAT</h3>
+                <p>是的妈妈，我会说话</p>
+            </a>
 
-        <div class="module-card placeholder">
-            <div class="module-icon">🎮</div>
-            <h3>GAMEJAM</h3>
-            <p>摸鱼（不是）</p>
-        </div>
+            <a href="{% url 'gamejam_home' %}" class="module-card">
+                <div class="module-icon">🎮</div>
+                <h3>GAMEJAM</h3>
+                 <p>摸鱼（不是）</p>
+            </a>
 
-        <div class="module-card placeholder">
-            <div class="module-icon">🛸</div>
-            <h3>COSMO</h3>
-            <p>迈向Cosmo之路</p>
+            <a href="{% url 'astra_home' %}" class="module-card">
+                <div class="module-icon">🔮</div>
+                <h3>ASTRA</h3>
+                 <p>命问星天</p>
+            </a>
+            <!-- 预留未来扩展位置 -->
+
+            <div class="module-card placeholder">
+                <div class="module-icon">📃</div>
+                <h3>PROFILE</h3>
+                <p>今日方知我是我</p>
+            </div>
+            
+            <div class="module-card placeholder">
+                <div class="module-icon">🪄</div>
+                <h3>KA-TOOL</h3>
+                <p>卡子的百宝箱</p>
+            </div>
+
+            <div class="module-card placeholder">
+                <div class="module-icon">🛸</div>
+                <h3>COSMO</h3>
+                <p>迈向Cosmo之路</p>
+            </div>
         </div>
-    </div>
 </div>
 
 <style>
@@ -193,9 +199,7 @@
         opacity: 0.6;
         background: #f8f9fa;
     }
-</style>
 
-<style>
     :root {
         --sunny-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         --starry-bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
@@ -275,6 +279,70 @@
         background-color: #ff4757;
         transform: translateY(-2px);
     }
+    .portal-header {
+        position: relative;
+        padding-top: 80px; /* 为性别选择区域留出空间 */
+    }
+    
+    .gender-login {
+        display: flex;
+        flex-direction: row; /* 改为水平排列 */
+        gap: 2rem; /* 保持间距 */
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+    }
+    
+    .gender-option {
+        width: 80px;
+    }
+    
+    .gender-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .gender-label {
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    .gender-option {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .gender-option::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .male .gender-image {
+        background: linear-gradient(135deg, #6b88ff 0%, #a2b6ff 100%);
+        box-shadow: 0 4px 15px rgba(107, 136, 255, 0.3);
+    }
+
+    .female .gender-image {
+        background: linear-gradient(135deg, #ff6b88 0%, #ffa2b6 100%);
+        box-shadow: 0 4px 15px rgba(255, 107, 136, 0.3);
+    }
+
+    .gender-label {
+        font-family: 'Comic Sans MS', cursive;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .gender-image.offline {
+        filter: grayscale(100%);
+        opacity: 0.5;
+    }
 </style>
 
 <script>
@@ -307,9 +375,34 @@
         }, 300);
     }
 
+    // 替换window.onload函数为：
     window.onload = function() {
         initTheme();
         createThemePanel();
+        
+        const modal = document.getElementById('passwordModal');
+        const closeBtn = document.querySelector('.close');
+        
+        // 性别选择点击事件
+        document.querySelectorAll('.gender-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const role = this.dataset.role;
+                document.getElementById('selectedRole').value = role;
+                modal.style.display = 'block';
+            });
+        });
+        
+        // 关闭按钮事件
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     };
 </script>
 <style>
@@ -440,6 +533,15 @@ window.addEventListener('click', function(e) {
     if (e.target === modal) {
         modal.style.display = 'none';
     }
+});
+
+// 替换现有的roleBtns事件监听为：
+document.querySelectorAll('.gender-option').forEach(option => {
+    option.addEventListener('click', function() {
+        const role = this.dataset.role;
+        document.getElementById('selectedRole').value = role;
+        document.getElementById('passwordModal').style.display = 'block';
+    });
 });
 </script>
 

@@ -4,8 +4,11 @@ from .schedule_todo_views import *
 from .vista_views import *
 from .chat_views import chat_cat_homepage
 from .views import *
+from .astra_views import *
 
 urlpatterns = [
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
     path('', portal_homepage, name='portal_homepage'),
     path('chat-cat/', chat_cat_homepage, name='chat_cat_homepage'),
     path('vista/', vista_homepage, name='vista_homepage'),
@@ -25,4 +28,12 @@ urlpatterns = [
     path('chat/', ai_chat_view, name='ai_chat'),
     path('concern50/', concern50_game, name='concern50-game'),
     path('switch-role/', switch_role, name='switch_role'),
+    path('gamejam/', gamejam_home, name='gamejam_home'),
+    path('gamejam/concern50/', concern50_game, name='concern50_game'),
+    path('astra', astra_home, name='astra_home'),
+    path('astra/divination/', astra_divination, name='divination'),
+    path('astra/upload_bg/', upload_bg_image, name='upload_bg'),
+    path('astra/generate_case/', generate_case, name='generate_case'),
+    path('astra/draw_cards/', draw_cards, name='draw_cards'),
+    path('astra/get_divination/', get_divination, name='get_divination'),
 ]

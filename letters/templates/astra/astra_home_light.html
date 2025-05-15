@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>日舆台</title>
+    <style>
+        .astra-container {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0e0ff;
+            min-height: 100vh;
+            font-family: 'Arial', sans-serif;
+            background-image: url('{{ bg_image }}');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        h1 {
+            color: #ffcc00;
+            text-shadow: 0 0 10px rgba(255,204,0,0.5);
+            margin-bottom: 30px;
+        }
+        .control-panel {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: inline-block;
+        }
+        .draw-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .question-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        #custom-question {
+            flex: 1;
+            min-width: 500px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid #ffcc00;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+        #custom-question:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255,204,0,0.3);
+        }
+        select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid #ffcc00;
+        }
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(to right, #ff8a00, #ffcc00);
+            border: none;
+            border-radius: 8px;
+            color: #1a1a2e;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,204,0,0.3);
+        }
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        .card-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+        .card-wrapper:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+        }
+        .card {
+            width: 150px;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .card-name {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        .interpretation {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .parchment {
+            background: #f5e7c6; /* 羊皮纸底色 */
+            background-image: 
+                linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            border: 1px solid #d4b483;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2) inset;
+            padding: 30px;
+            color: #5c3a21;
+            font-family: 'SimSun', serif;
+            position: relative;
+        }
+        .parchment:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(255,255,255,0.3) 50%,
+                transparent 100%
+            );
+            pointer-events: none;
+        }
+
+        .loading-animation {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,204,0,0.3);
+            border-radius: 50%;
+            border-top-color: #ffcc00;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="astra-container">
+        <h1>✨ 日舆台 ✨</h1>
+        
+        <div class="control-panel">
+            <div class="question-control">
+                <label for="divination-type">占卜问题：</label>
+                <select id="divination-type">
+                    <option value="daily">今日运势</option>
+                    <option value="love">感情发展</option>
+                    <option value="career">工作机遇</option>
+                    <option value="custom">自定义问题</option>
+                </select>
+                <input type="text" id="custom-question" placeholder="输入自定义问题" style="display:none">
+                <button id="random-question">随机生成</button>
+            </div>
+            <div class="draw-control">
+                <label for="card-count">抽取数量：</label>
+                <select id="card-count">
+                    <option value="1" selected>1张</option>
+                    <option value="2">2张</option>
+                    <option value="3">3张</option>
+                    <option value="4">4张</option>
+                    <option value="5">5张</option>
+                    <option value="6">6张</option>
+                    <option value="7">7张</option>
+                    <option value="8">8张</option>
+                </select>
+                <button id="draw-cards">抽卡</button>
+                <button id="redraw-cards" style="display:none">重新抽卡 (<span id="redraw-count">5</span>次)</button>
+                <button id="divination-btn" style="display:none">开始占卜</button>
+                <button id="reset-divination" style="display:none">重新占卜</button>
+            </div>
+        </div>
+        
+        <div class="card-grid" id="card-container"></div>
+        
+        <div class="interpretation" id="interpretation">
+            请点击上方"开始占卜"按钮抽取塔罗牌...
+        </div>
+    </div>
+
+    <div class="theme-switcher">
+        <button id="theme-toggle">切换主题</button>
+        <form id="bg-upload-form" style="display:inline-block">
+            <input type="file" id="bg-upload" name="bg_image" accept="image/*" style="display:none">
+            <input type="hidden" name="theme" value="{{ theme }}">
+            <button type="button" onclick="document.getElementById('bg-upload').click()">更换背景</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('divination-type').addEventListener('change', (e) => {
+            const customInput = document.getElementById('custom-question');
+            customInput.style.display = e.target.value === 'custom' ? 'block' : 'none';
+        });
+
+        document.getElementById('random-question').addEventListener('click', async () => {
+            const theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            const response = await fetch(`/astra/generate_case/?theme=${theme}`);
+            const data = await response.json();
+            document.getElementById('divination-type').value = 'custom';
+            const responseText = data?.output?.text || '';
+            document.getElementById('custom-question').value = JSON.parse(responseText).text;
+            document.getElementById('custom-question').style.display = 'block';
+        });
+
+        let redrawTimes = 5;
+        let currentCards = [];
+        let currentQuestion = '';
+
+        document.getElementById('draw-cards').addEventListener('click', async () => {
+            const count = document.getElementById('card-count').value;
+            const questionType = document.getElementById('divination-type').value;
+            
+            // 保存当前问题
+            if(questionType === 'custom') {
+                currentQuestion = document.getElementById('custom-question').value;
+            } else {
+                const questions = {
+                    'daily': '今天的运势如何？',
+                    'love': '我的感情会怎样发展？',
+                    'career': '近期工作会有哪些机遇？'
+                };
+                currentQuestion = questions[questionType];
+            }
+            
+            // 只抽卡，不占卜
+            const response = await fetch(`/astra/draw_cards/?count=${count}`);
+            const data = await response.json();
+            
+            currentCards = data.cards;
+            redrawTimes = data.remaining_redraws || 5;
+            
+            // 更新卡片显示
+            const container = document.getElementById('card-container');
+            container.innerHTML = '';
+            
+            currentCards.forEach(card => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+                
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.style.backgroundImage = `url(/media/astra/huanxingji/${card.image})`;
+                if(card.position === '逆位') {
+                    cardDiv.style.transform = 'rotate(180deg)';
+                }
+                cardDiv.onclick = () => interpretCard(card.name);
+                
+                const name = document.createElement('div');
+                name.className = 'card-name';
+                name.textContent = card.name;
+                
+                wrapper.appendChild(cardDiv);
+                wrapper.appendChild(name);
+                container.appendChild(wrapper);
+            });
+            
+            // 隐藏抽卡按钮，显示重新抽卡和占卜按钮
+            document.getElementById('draw-cards').style.display = 'none';
+            document.getElementById('redraw-cards').style.display = 'inline-block';
+            document.getElementById('divination-btn').style.display = 'inline-block';
+            document.getElementById('redraw-count').textContent = redrawTimes;
+            
+            // 清空解析区域
+            document.getElementById('interpretation').innerHTML = '已重新抽取卡片，请点击"开始占卜"获取解析';
+        });
+
+        document.getElementById('redraw-cards').addEventListener('click', async () => {
+            if(redrawTimes <= 0) {
+                // 不重新显示抽卡按钮
+                document.getElementById('redraw-cards').style.display = 'none';
+                return;
+            }
+            
+            redrawTimes--;
+            document.getElementById('redraw-count').textContent = redrawTimes;
+            
+            // 重新请求抽卡API
+            const count = document.getElementById('card-count').value;
+            const response = await fetch(`/astra/draw_cards/?count=${count}`);
+            const data = await response.json();
+            
+            // 确保这里正确赋值
+            currentCards = data.cards || [];  // 添加空数组作为fallback
+            redrawTimes = data.remaining_redraws || 5;
+            
+            // 更新当前卡牌
+            currentCards = data.cards;
+            
+            // 更新卡片显示
+            const container = document.getElementById('card-container');
+            container.innerHTML = '';
+            
+            currentCards.forEach(card => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+                
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card';
+                cardDiv.style.backgroundImage = `url(/media/astra/huanxingji/${card.image})`;
+                if(card.position === '逆位') {
+                    cardDiv.style.transform = 'rotate(180deg)';
+                }
+                cardDiv.onclick = () => interpretCard(card.name);
+                
+                const name = document.createElement('div');
+                name.className = 'card-name';
+                name.textContent = card.name;
+                
+                wrapper.appendChild(cardDiv);
+                wrapper.appendChild(name);
+                container.appendChild(wrapper);
+            });
+            
+            // 清空解析区域
+            document.getElementById('interpretation').innerHTML = '已重新抽取卡片，请点击"开始占卜"获取解析';
+            
+            // 如果次数用尽，隐藏重新抽卡按钮
+            if(redrawTimes <= 0) {
+                document.getElementById('redraw-cards').style.display = 'none';
+            }
+        });
+
+        document.getElementById('divination-btn').addEventListener('click', async () => {
+            if(currentCards.length === 0) {
+                alert('请先抽取卡牌！');
+                return;
+            }
+            
+            const interpretation = document.getElementById('interpretation');
+            interpretation.innerHTML = `
+                <div class="loading-animation"></div>
+                <span>正在占卜中，请稍候...</span>
+            `;
+            
+            // 确保使用最新的currentCards
+            const cardNames = currentCards.map(card => card.name);
+            
+            // 获取主题的推荐方式
+            function getCurrentTheme() {
+                // 优先从URL参数获取
+                const urlTheme = new URLSearchParams(window.location.search).get('theme');
+                if(urlTheme) return urlTheme;
+                
+                // 后备方案：从body类名检测
+                return document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+            }
+            
+            // 使用示例
+            const theme = getCurrentTheme();
+            
+            // 调用占卜API时带上theme参数
+            const response = await fetch(`/astra/get_divination/?cards=${JSON.stringify(cardNames)}&case=${encodeURIComponent(currentQuestion)}&theme=${theme}`);
+            const data = await response.json();
+            
+            // 处理富文本格式
+            const rawText = JSON.parse(data.interpretation).text;
+            const formattedText = rawText
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            
+            interpretation.innerHTML = `
+                <div class="parchment">
+                    <h3>${currentQuestion}</h3>
+                    <p>${formattedText}</p>
+                </div>
+            `;
+            
+            // 显示重新占卜按钮
+            document.getElementById('reset-divination').addEventListener('click', () => {
+                // 重置所有状态
+                document.getElementById('card-container').innerHTML = '';
+                document.getElementById('interpretation').innerHTML = '请点击上方"开始占卜"按钮抽取塔罗牌...';
+                document.getElementById('draw-cards').style.display = 'inline-block';
+                document.getElementById('redraw-cards').style.display = 'none';
+                document.getElementById('divination-btn').style.display = 'none';
+                document.getElementById('reset-divination').style.display = 'none';
+                
+                // 重置计数器
+                redrawTimes = 5;
+                document.getElementById('redraw-count').textContent = redrawTimes;
+                
+                // 清空当前卡牌和问题
+                currentCards = [];
+                currentQuestion = '';
+            });
+        });
+        
+        function interpretCard(imgName) {
+            document.getElementById('interpretation').innerHTML = 
+                `<h3>${imgName.replace('.jpg', '').replace('.png', '')} 的解析</h3>
+                <p>正在获取神秘解读...</p>`;
+        }
+
+        // 主题切换
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const currentTheme = new URLSearchParams(window.location.search).get('theme') || 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // 切换body类名
+            if(newTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.body.classList.remove('light-theme');
+            } else {
+                document.body.classList.add('light-theme');
+                document.body.classList.remove('dark-theme');
+            }
+            
+            window.location.search = `?theme=${newTheme}`;
+        });
+    
+        // 背景图片上传
+        document.getElementById('bg-upload').addEventListener('change', async (e) => {
+            const form = document.getElementById('bg-upload-form');
+            const formData = new FormData(form);
+            
+            const response = await fetch('/astra/upload_bg/', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            if(result.status === 'success') {
+                document.querySelector('.astra-container').style.backgroundImage = `url(${result.bg_url})`;
+            }
+        });
+    </script>
+</body>
+</html>
