@@ -200,7 +200,10 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
-                body: JSON.stringify({ prompt: message })
+                body: JSON.stringify({ 
+                    prompt: message,
+                    type: 'cat'  // 添加type字段
+                })
             })
                 .then(response => response.json())
                 .then(data => {

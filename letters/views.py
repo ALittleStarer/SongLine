@@ -13,9 +13,12 @@ from .models import Letter
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.contrib.auth.hashers import make_password, check_password
+import random  # 添加这行导入语句
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import redirect
 from .models import UserProfile  # 添加这行导入
+from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 
 def ai_chat_view(request):
     if request.method == 'POST':
@@ -51,7 +54,24 @@ def get_item(dictionary, key):
     return dictionary.get(int(key))
 
 def portal_homepage(request):
-    return render(request, 'letters/portal_homepage.html')
+    male_profile = UserProfile.objects.filter(gender='M').first()
+    female_profile = UserProfile.objects.filter(gender='F').first()
+    
+    return render(request, 'letters/portal_homepage.html', {
+        'male_profile': male_profile,
+        'female_profile': female_profile
+    })
+
+def gamejam_home(request):
+    games = [
+        {
+            'name': 'Concern50', 
+            'url': 'concern50_game',  # 本地游戏路由
+            'is_external': False
+        },
+        # 可以在这里添加更多游戏
+    ]
+    return render(request, 'games/gamejam_home.html', {'games': games})
 
 def concern50_game(request):
     return render(request, 'games/concern50.html')
@@ -65,7 +85,28 @@ def switch_role(request):
         profile = UserProfile.objects.filter(gender=role).first()
         
         if profile and password == profile.view_password:  # 简单比较，实际应该用check_password
+            profile.is_online = True  # 新增：更新在线状态
+            profile.save()  # 新增：保存状态
             request.session['current_role'] = role
             return redirect('portal_homepage')
         return HttpResponseForbidden("密码错误")
     return HttpResponse(status=405)  # 如果不是POST请求返回405
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            auth_login(request, user)
+            profile = user.profile
+            profile.is_online = True
+            profile.save()
+            return redirect('portal_homepage')
+
+def logout_view(request):
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        profile.is_online = False
+        profile.save()
+    auth_logout(request)
+    return redirect('portal_homepage')

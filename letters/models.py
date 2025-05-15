@@ -43,4 +43,9 @@ class UserProfile(models.Model):
         ('F', '女')
     ]
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    view_password = models.CharField(max_length=100, default='LibertyIsland')  # 添加默认值
+    view_password = models.CharField(max_length=100, default='LibertyIsland')
+    is_online = models.BooleanField(default=False)  # 新增在线状态字段
+    last_activity = models.DateTimeField(auto_now=True)  # 新增最后活动时间
+
+    def __str__(self):
+        return f"{self.user.username} - {'在线' if self.is_online else '离线'}"

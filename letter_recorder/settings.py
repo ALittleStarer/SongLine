@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-2x1lx%r-^2*_u=5j*js_$u(*g3dgsoysf(a#^#g4rn@u6hhl)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['106.15.40.180', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['106.15.40.180', 'localhost', '127.0.0.1', "caojuekz.com"]
 
 
 # Application definition
@@ -184,7 +184,9 @@ CACHES = {
 
 CSRF_TRUSTED_ORIGINS = [
     'http://106.15.40.180',
-    'http://106.15.40.180:8000'
+    'http://caojuekz.com',
+    'http://106.15.40.180:8000',
+    'http://caojuekz.com:8000'
 ]
 
-TRACKING_DOMAIN = 'http://106.15.40.180:8000'
+TRACKING_DOMAIN = 'http://106.15.40.180'
