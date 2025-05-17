@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # 进入项目目录
-cd /home/admin/django/letter_recorder
+cd /home/admin/django/songline_recorder
 
 # 使用系统Python3直接运行
 /usr/bin/python3 -m gunicorn --bind 0.0.0.0:8000 \
-letter_recorder.wsgi:application \
+songline_recorder.wsgi:application \
 --pid /tmp/gunicorn.pid \
 --daemon
 

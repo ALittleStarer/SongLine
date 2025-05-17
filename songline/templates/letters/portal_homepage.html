@@ -1,0 +1,625 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+    
+    body {
+        background: linear-gradient(135deg, rgba(232, 202, 214, 0.8) 0%, rgba(255,204,230,0.8) 100%);
+        font-family: 'Comic Sans MS', cursive;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    body:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30,50 Q50,30 70,50 T90,50' stroke='%23ff99cc' stroke-width='2' fill='none'/%3E%3Cpath d='M30,70 Q50,50 70,70 T90,70' stroke='%23ff99cc' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+        background-size: 200px;
+        opacity: 0.3;
+        animation: float 15s linear infinite;
+    }
+    
+    .portal-header h1 {
+        font-family: 'Dancing Script', cursive;
+        font-size: 5rem;
+        color: #ff6b88;
+        text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+        margin-bottom: 2rem;
+        text-align: center;
+        position: relative;
+    }
+    
+    .portal-header h1:after {
+        content: "";
+        display: block;
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(to right, transparent, #ff6b88, transparent);
+        margin: 10px auto;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0) translateX(0); }
+        50% { transform: translateY(-20px) translateX(20px); }
+        100% { transform: translateY(0) translateX(0); }
+    }
+    
+    .module-card {
+        background: rgba(255,255,255,0.8);
+        color: #333 !important; /* 强制文字颜色为深色 */
+        backdrop-filter: blur(5px);
+    }
+    
+    .module-icon {
+        animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+</style>
+
+<div class="portal-container">
+    <div class="portal-header">
+        <h1>Song Line</h1>
+        <div class="gender-login">
+            <div class="gender-option male role-btn" data-role="M">
+                <div class="gender-image {% if not male_profile.is_online %}offline{% endif %}"></div>
+                <div class="gender-label">Male</div>
+            </div>
+            <div class="gender-option female role-btn" data-role="F">
+                <div class="gender-image {% if not female_profile.is_online %}offline{% endif %}"></div>
+                <div class="gender-label">Female</div>
+            </div>
+        </div>
+
+        <!-- 在gender-login区域后添加 -->
+        <div id="passwordModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <form id="roleForm" method="post" action="{% url 'switch_role' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="selectedRole" name="role">
+                    <div class="input-group">
+                        <label for="password">请输入密码</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="theme-btn">登录</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="module-grid">
+            <!-- 信件模块 -->
+            <!-- 修改受保护模块 -->
+            <a href="{% url 'letter_history' %}" class="module-card protected-module">
+                <div class="module-icon">🕊️</div>
+                <h3>CP-NET</h3>
+                <p>Carrior Pigeon</p>
+            </a>
+            
+            <a href="{% url 'cpnet_homepage' %}" class="module-card protected-module">
+                <div class="module-icon">📅</div>
+                <h3>KALAM</h3>
+                <p>TODO & Schedule</p>
+            </a>
+            
+            <a href="{% url 'vista_homepage' %}" class="module-card protected-module">
+                <div class="module-icon">⛰️</div>
+                <h3>VISTA</h3>
+                <p>迷人景致</p>
+            </a>
+            
+            <a href="{% url 'chat_cat_homepage' %}" class="module-card">
+                <div class="module-icon">🐱</div>
+                <h3>CHATCAT</h3>
+                <p>是的妈妈，我会说话</p>
+            </a>
+
+            <a href="{% url 'gamejam_home' %}" class="module-card">
+                <div class="module-icon">🎮</div>
+                <h3>GAMEJAM</h3>
+                 <p>摸鱼（不是）</p>
+            </a>
+
+            <a href="{% url 'astra_home' %}" class="module-card">
+                <div class="module-icon">🔮</div>
+                <h3>ASTRA</h3>
+                 <p>命问星天</p>
+            </a>
+            <!-- 预留未来扩展位置 -->
+
+            <div class="module-card placeholder">
+                <div class="module-icon">📃</div>
+                <h3>PROFILE</h3>
+                <p>今日方知我是我</p>
+            </div>
+            
+            <div class="module-card placeholder">
+                <div class="module-icon">🪄</div>
+                <h3>KA-TOOL</h3>
+                <p>卡子的百宝箱</p>
+            </div>
+
+            <div class="module-card placeholder">
+                <div class="module-icon">🛸</div>
+                <h3>COSMO</h3>
+                <p>迈向Cosmo之路</p>
+            </div>
+        </div>
+</div>
+
+<style>
+    .portal-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+    
+    .module-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    
+    .module-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .placeholder {
+        opacity: 0.6;
+        background: #f8f9fa;
+    }
+
+    :root {
+        --sunny-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --starry-bg: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+        --cozy-bg: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        --card-bg: rgba(255,255,255,0.9);
+    }
+
+    body {
+        font-family: 'Comic Sans MS', cursive;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s ease;
+        min-height: 100vh;
+    }
+
+    body.sunny-theme {
+        background: var(--sunny-bg);
+        color: #2d3436;
+    }
+
+    body.starry-theme {
+        background: var(--starry-bg);
+        color: #f5f6fa;
+    }
+
+    body.cozy-theme {
+        background: var(--cozy-bg);
+        color: #3d3d3d;
+    }
+
+    .module-card {
+        background: var(--card-bg) !important;
+        backdrop-filter: blur(5px);
+    }
+
+    .theme-panel {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.8);
+        padding: 10px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+
+    .theme-btn {
+        border: none;
+        padding: 8px 15px;
+        margin: 0 5px;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .sun-btn { background: #fdcb6e; }
+    .star-btn { background: #6c5ce7; color: white; }
+    .cozy-btn { background: #e17055; color: white; }
+    .role-switcher {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    #showRoleSwitcher {
+        padding: 8px 16px;
+        background-color: #ff6b88;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Comic Sans MS', cursive;
+    }
+
+    .role-switcher button:hover {
+        background-color: #ff4757;
+        transform: translateY(-2px);
+    }
+    .portal-header {
+        position: relative;
+        padding-top: 80px; /* 为性别选择区域留出空间 */
+    }
+    
+    .gender-login {
+        display: flex;
+        flex-direction: row; /* 改为水平排列 */
+        gap: 2rem; /* 保持间距 */
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+    }
+    
+    .gender-option {
+        width: 80px;
+    }
+    
+    .gender-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .gender-label {
+        font-size: 0.8rem;
+        margin-top: 5px;
+    }
+
+    .gender-option {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .gender-option::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+    }
+
+    .male .gender-image {
+        background: linear-gradient(135deg, #6b88ff 0%, #a2b6ff 100%);
+        box-shadow: 0 4px 15px rgba(107, 136, 255, 0.3);
+    }
+
+    .female .gender-image {
+        background: linear-gradient(135deg, #ff6b88 0%, #ffa2b6 100%);
+        box-shadow: 0 4px 15px rgba(255, 107, 136, 0.3);
+    }
+
+    .gender-label {
+        font-family: 'Comic Sans MS', cursive;
+        font-size: 1.2rem;
+        color: #333;
+    }
+
+    .gender-image.offline {
+        filter: grayscale(100%);
+        opacity: 0.5;
+    }
+
+    .logged-in {
+        position: relative;
+    }
+
+    .logged-in::after {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: -5px;
+        right: -5px;
+        bottom: -5px;
+        border-radius: 4px; /* 改为方形圆角 */
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+        animation: pulse 2s infinite;
+        pointer-events: none;
+    }
+
+    @keyframes pulse {
+        0% { 
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7),
+                       0 0 0 0 rgba(255, 215, 0, 0.4); 
+        }
+        50% { 
+            box-shadow: 0 0 0 10px rgba(255, 215, 0, 0.7),
+                       0 0 0 20px rgba(255, 215, 0, 0.4); 
+        }
+        100% { 
+            box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7),
+                       0 0 0 0 rgba(255, 215, 0, 0); 
+        }
+    }
+
+    .protected-module {
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .protected-module:after {
+        content: '🔒';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.2rem;
+        opacity: 0.7;
+    }
+
+    .protected-module[style*="opacity: 1"]:after {
+        display: none;
+    }
+</style>
+
+<script>
+    // 增强版主题初始化
+    function initTheme() {
+        const hour = new Date().getHours();
+        const defaultTheme = (hour >=6 && hour <18) ? 'sunny' : 'starry';
+        document.body.className = localStorage.getItem('user-theme') || `${defaultTheme}-theme`;
+    }
+
+    // 主题切换面板优化
+    function createThemePanel() {
+        const panel = document.createElement('div');
+        panel.className = 'theme-panel';
+        panel.innerHTML = `
+            <button class="theme-btn sun-btn" onclick="setTheme('sunny')">☀️ 阳光</button>
+            <button class="theme-btn star-btn" onclick="setTheme('starry')">🌌 星空</button>
+            <button class="theme-btn cozy-btn" onclick="setTheme('cozy')">🏠 温馨</button>
+        `;
+        document.body.appendChild(panel);
+    }
+
+    // 带过渡效果的主题切换
+    function setTheme(theme) {
+        document.body.style.opacity = 0;
+        setTimeout(() => {
+            document.body.className = `${theme}-theme`;
+            localStorage.setItem('user-theme', theme);
+            document.body.style.opacity = 1;
+        }, 300);
+    }
+
+    // 在window.onload函数中添加
+    window.onload = function() {
+        initTheme();
+        createThemePanel();
+        
+        // 检查登录状态
+        checkLoginStatus();
+        
+        const modal = document.getElementById('passwordModal');
+        const closeBtn = document.querySelector('.close');
+        
+        // 性别选择点击事件
+        document.querySelectorAll('.gender-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const role = this.dataset.role;
+                document.getElementById('selectedRole').value = role;
+                modal.style.display = 'block';
+            });
+        });
+        
+        // 关闭按钮事件
+        closeBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    };
+
+    function checkLoginStatus() {
+        const currentIP = '{{ request.META.HTTP_X_FORWARDED_FOR }}';
+        const sessionIP = '{{ request.session.logged_in_ip }}';
+        const sessionRole = '{{ request.session.current_role }}';
+        
+        const isLoggedIn = sessionRole && sessionIP === currentIP;
+        
+        if(isLoggedIn) {
+            document.querySelector(`.gender-option[data-role="${sessionRole}"]`).classList.add('logged-in');
+            document.querySelectorAll('.protected-module').forEach(module => {
+                module.style.opacity = 1;
+                module.style.pointerEvents = 'auto';
+            });
+        } else {
+            document.querySelectorAll('.gender-option').forEach(option => {
+                option.classList.remove('logged-in');
+            });
+            document.querySelectorAll('.protected-module').forEach(module => {
+                module.style.opacity = 0.5;
+                module.style.pointerEvents = 'none';
+            });
+        }
+    }
+</script>
+<style>
+    body.day-theme {
+        background: var(--day-bg);
+        color: #333;
+    }
+
+    body.night-theme {
+        background: var(--night-bg);
+        color: #fff;
+    }
+
+    .theme-switch {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .light-switch {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #ffd166;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(255,209,102,0.7);
+    }
+</style>
+<style>
+    body {
+        overflow-y: auto; /* 允许垂直滚动 */
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .module-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-bottom: 60px; /* 添加底部内边距 */
+    }
+    
+    @media (max-width: 768px) {
+        .module-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .portal-header h1 {
+            font-size: 3rem;
+        }
+        
+        .module-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<style>
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1001;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(232,202,214,0.8);
+    }
+    
+    .modal-content {
+        background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 12px;
+        width: 300px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    
+    .input-group {
+        margin: 20px 0;
+    }
+    
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #ff6b88;
+        font-family: 'Comic Sans MS', cursive;
+    }
+    
+    .input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ffb6c1;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+    
+    .close {
+        float: right;
+        cursor: pointer;
+        font-size: 24px;
+        color: #ff6b88;
+    }
+</style>
+
+<script>
+const modal = document.getElementById('passwordModal');
+const roleBtns = document.querySelectorAll('.role-btn');
+const selectedRole = document.getElementById('selectedRole');
+const closeBtn = document.querySelector('.close');
+
+roleBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+        selectedRole.value = this.dataset.role;
+        modal.style.display = 'block';
+    });
+});
+
+closeBtn.addEventListener('click', function() {
+    modal.style.display = 'none';
+});
+
+window.addEventListener('click', function(e) {
+    if (e.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// 替换现有的roleBtns事件监听为：
+document.querySelectorAll('.gender-option').forEach(option => {
+    option.addEventListener('click', function() {
+        const role = this.dataset.role;
+        document.getElementById('selectedRole').value = role;
+        document.getElementById('passwordModal').style.display = 'block';
+    });
+});
+</script>
+
+{% endblock %}
