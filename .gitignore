@@ -13,4 +13,8 @@ __pycache__/
 # 忽略数据库文件
 *.sqlite3
 # 忽略静态文件(如果已收集)
-staticfiles/
+static/
+migrations/
+logs/
+*.log
+*.pid

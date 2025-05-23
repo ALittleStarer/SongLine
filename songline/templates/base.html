@@ -1,13 +1,99 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Song Line{% endblock %}</title>
-    {% block extra_head %}{% endblock %}
+    <!-- 修正CSS引用 -->
+    <link rel="stylesheet" href="{% static 'css/music-player.css' %}"> 
 </head>
 <body>
-    {% block content %}
-    {% endblock %}
+    <!-- 新增音乐播放器 -->
+    <div class="music-player">
+        <div class="song-info" id="songInfo"></div>
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+        <div class="player-controls">
+            <button class="ctrl-btn" onclick="skipPrevious()">⏮</button>
+            <button class="ctrl-btn" id="playBtn">▶️</button>
+            <button class="ctrl-btn" onclick="skipNext()">⏭</button>
+            <select class="mode-select" id="playMode">
+                <option value="list">列表循环</option>
+                <option value="single">单曲循环</option>
+                <option value="random">随机播放</option>
+            </select>
+        </div>
+        <audio id="bgm-player"></audio>
+    </div>
+    
+    {% block content %}{% endblock %}
+    
+    <script src="{% static 'js/music-player.js' %}"></script>
+    <script>
+    document.getElementById('playBtn').addEventListener('click', function(e) {
+        console.log('按钮点击事件触发');
+        console.log('音频状态:', audio.paused ? '暂停' : '播放中');
+        console.log('音频元素:', audio);
+        console.log('当前时间:', audio.currentTime);
+        console.log('音频源:', audio.src);
+        console.log('本地存储状态:', localStorage.getItem('playerState'));
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 清除可能存在的旧状态
+        if(!localStorage.getItem('playerState')) {
+            audio.currentTime = 0;
+            playBtn.textContent = '▶️';
+        }
+    });
+    </script>
+    <script>
+    // 将以下脚本移动到music-player.js中
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedState = localStorage.getItem('playerState');
+        if(savedState) {
+            const state = JSON.parse(savedState);
+            if(state.isPlaying) {
+                // 使用music-player.js中定义的audio变量
+                window.audio.src = window.playlist[state.currentTrack];
+                window.audio.currentTime = state.currentTime;
+                window.audio.play()
+                    .then(() => {
+                        document.getElementById('playBtn').textContent = '⏸️';
+                    })
+                    .catch(e => {
+                        console.log('自动播放被阻止');
+                        document.getElementById('playBtn').textContent = '▶️';
+                    });
+            } else {
+                document.getElementById('playBtn').textContent = '▶️';
+            }
+        }
+    });
+    </script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('音频元素状态:', audio.readyState); // 检查音频元素状态
+        console.log('音频源:', audio.src); // 检查音频源是否正确
+    });
+    </script>
+    <script>
+    document.addEventListener('visibilitychange', function() {
+        if(!document.hidden && localStorage.getItem('playerState')) {
+            const state = JSON.parse(localStorage.getItem('playerState'));
+            if(state.isPlaying && audio.paused) {
+                audio.play().catch(e => console.log('页面恢复后自动播放被阻止'));
+            }
+        }
+    });
+    </script>
+    <script>
+    audio.addEventListener('error', function(e) {
+        console.error('音频错误:', e);
+        alert('音频播放出现问题，请尝试刷新页面');
+    });
+    </script>
+    <!-- 移除内联脚本 -->
 </body>
 </html>

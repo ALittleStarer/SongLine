@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-2x1lx%r-^2*_u=5j*js_$u(*g3dgsoysf(a#^#g4rn@u6hhl)e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['106.15.40.180', 'localhost', '127.0.0.1', "caojuekz.com"]
+ALLOWED_HOSTS = ['106.15.40.180', 'localhost', '127.0.0.1', 'caojuekz.com', 'bqw.hulianwgj.com']
 
 
 # Application definition
@@ -47,7 +47,6 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',  # 必须在这个位置
     'django.middleware.common.CommonMiddleware',
     'songline_recorder.middleware.visit_tracker.VisitTrackerMiddleware',
-    'songline.middleware.LoginRequiredMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -125,7 +124,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # 修改为统一静态文件目录
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'songline/static'),
 ]
@@ -152,6 +152,12 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024  # 10MB
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} [{levelname}] {pathname}:{lineno} - {message}',
+            'style': '{',
+        },
+    },
     'filters': {
         'ignore_disallowed_host': {
             '()': 'django.utils.log.CallbackFilter',
@@ -166,11 +172,15 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/debug.log'),
-            'filters': ['ignore_disallowed_host']
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
     },
     'root': {
-        'handlers': ['file'],
+        'handlers': ['file', 'console'],
         'level': 'DEBUG',
     },
 }
@@ -194,7 +204,7 @@ TRACKING_DOMAIN = 'http://106.15.40.180'
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_NAME = 'sessionid'  # 确保使用默认的sessionid名称
-SESSION_COOKIE_AGE = 3600 # 2周过期时间(秒)
+SESSION_COOKIE_AGE = 3600
 SESSION_COOKIE_SECURE = False  # 开发环境可以设为False
 SESSION_COOKIE_HTTPONLY = True  # 防止XSS攻击
 SESSION_COOKIE_SAMESITE = 'Lax'  # 同站策略

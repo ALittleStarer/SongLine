@@ -36,4 +36,5 @@ urlpatterns = [
     path('astra/generate_case/', generate_case, name='generate_case'),
     path('astra/draw_cards/', draw_cards, name='draw_cards'),
     path('astra/get_divination/', get_divination, name='get_divination'),
+    path('api/music-list/', music_list),
 ]

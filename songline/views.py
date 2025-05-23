@@ -21,6 +21,8 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.core.cache import cache
 from django.http import JsonResponse
+import os
+from django.conf import settings
 
 def ai_chat_view(request):
     if request.method == 'POST':
@@ -121,3 +123,12 @@ def logout_view(request):
         
     auth_logout(request)
     return redirect('portal_homepage')
+
+
+def music_list(request):
+    music_dir = os.path.join(settings.MEDIA_ROOT, 'music')
+    try:
+        files = [os.path.join('/media/music/', f) for f in os.listdir(music_dir) if f.endswith('.mp3')]
+        return JsonResponse(files, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

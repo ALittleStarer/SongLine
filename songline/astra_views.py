@@ -16,26 +16,38 @@ type2AppId = {
     'dark' : '850b29534d7441419ed16f29807a760a',
 }
 
-def call_ai(prompt, type):
-    try:
-        # 调用AI服务获取响应
-        response = Application.call(
-            api_key=os.getenv("DASHSCOPE_API_KEY"),
-            app_id=type2AppId[type],
-            prompt=prompt
-        )
+def call_ai(prompt, type, max_retries=3, retry_delay=2):
+    retries = 0
+    while retries < max_retries:
+        try:
+            response = Application.call(
+                api_key=os.getenv("DASHSCOPE_API_KEY"),
+                app_id=type2AppId[type],
+                prompt=prompt,
+                timeout=60
+            )
+
+            if response.status_code == 200:
+                return JsonResponse({
+                    'output': {
+                        'text': str(response.output)
+                    }
+                })
+            else:
+                logger.warning(f"AI服务异常，重试 {retries+1}/{max_retries}")
                 
-        if response.status_code == 200:
-            return JsonResponse({
-                'output': {
-                    'text': str(response.output)  # 根据实际响应结构调整
-                }
-            })
-        else:
-            return JsonResponse({'error': 'AI服务调用失败'}, status=500)
-                
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=400)
+        except requests.exceptions.Timeout:
+            logger.error(f"请求超时，重试 {retries+1}/{max_retries}")
+        except ConnectionError:
+            logger.error(f"连接异常，重试 {retries+1}/{max_retries}")
+        except Exception as e:
+            logger.exception("未预期的异常")
+            return JsonResponse({'error': str(e)}, status=400)
+            
+        retries += 1
+        time.sleep(retry_delay)
+        
+    return JsonResponse({'error': 'AI服务暂时不可用，请稍后重试'}, status=503)
 
 def astra_home(request):
     theme = request.GET.get('theme', 'light')
@@ -148,7 +160,6 @@ def draw_cards(request):
     return JsonResponse({'error': 'Invalid method'}, status=405)
 
 def get_divination(request):
-    """单独处理占卜逻辑"""
     if request.method == 'GET':
         try:
             # 从JSON字符串解析卡牌列表

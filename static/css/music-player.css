@@ -1,0 +1,92 @@
+.music-player {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.95);
+    padding: 10px 20px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.player-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.song-info {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.progress-container {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 20px;
+}
+
+.progress-bar {
+    height: 4px;
+    background: #007bff;
+    transition: width 0.1s ease;
+}
+
+.toggle-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+}
+
+.mini-player {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mini-player .play-icon {
+    font-size: 24px;
+}
+
+.ctrl-btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}
+
+.mode-select {
+    padding: 6px 12px;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+}
+
+.progress-container {
+    width: 100%;
+    height: 3px;
+    background: #eee;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #ff6b88;
+    width: 0%;
+    transition: width 0.1s linear;
+}
