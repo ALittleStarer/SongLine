@@ -14,7 +14,7 @@ __pycache__/
 *.sqlite3
 # 忽略静态文件(如果已收集)
 static/
-migrations/
+songline/migrations/
 logs/
 *.log
 *.pid
