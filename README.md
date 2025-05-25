@@ -15,6 +15,9 @@
 
 可以将每个人看到的SongLine视图视作一个房子
 所谓向SongLine注册就好比向SongLine租了一个房子作为个人空间。
+而当两人选择绑定的时候，就可以获得共同的“房子”，也获得了共同的钥匙：public_key
+当然，为了保持独立性，原有的个人空间仍然存在，保留了原有的个人钥匙：private_key
+图例：AB_key就是public_key，而A_key，B_key是private_key
 ![bce15d64aa9c13cc05f19287b0161b83](https://github.com/user-attachments/assets/332d7055-a8ae-422f-b1b5-76a508a4e891)
 
 
