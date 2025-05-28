@@ -1,0 +1,19 @@
+{% extends 'book_base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>书籍列表</h2>
+        <div class="list-group">
+            {% for book in books %}
+            <a href="{% url 'book_detail' book.pk %}" class="list-group-item list-group-item-action">
+                {{ book.title }} ({{ book.get_format_display }})
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4">
+        <a href="{% url 'new_book' %}" class="btn btn-primary">新建书籍</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,12 @@
 from django.urls import path
-from .letter_views import *
-from .schedule_todo_views import *
-from .vista_views import *
-from .chat_views import chat_cat_homepage
 from .views import *
-from .astra_views import *
+from .cpnet.letter_views import *
+from .kalam.schedule_todo_views import *
+from .vista.vista_views import *
+from .chatcat.chat_views import *
+from .gamejam.gamejam_views import *
+from .astra.astra_views import *
+from .book.book_views import book_list, book_detail, book_editor
 
 urlpatterns = [
     path('login/', login_view, name='login'),
@@ -37,4 +39,8 @@ urlpatterns = [
     path('astra/draw_cards/', draw_cards, name='draw_cards'),
     path('astra/get_divination/', get_divination, name='get_divination'),
     path('api/music-list/', music_list),
+    path('books/', book_list, name='book_list'),
+    path('books/<int:pk>/', book_detail, name='book_detail'),
+    path('books/editor/<int:pk>/', book_editor, name='book_editor'),
+    path('books/editor/', book_editor, name='new_book'),
 ]

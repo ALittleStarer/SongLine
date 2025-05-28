@@ -11,8 +11,14 @@ case "$1" in
             exit 1
         fi
         cd $PROJECT_DIR
-        nohup python3 manage.py runserver 0.0.0.0:8000 > $LOG_FILE 2>&1 &
-        echo $! > $PID_FILE
+        nohup /usr/bin/python3 manage.py runserver 0.0.0.0:8000 > $LOG_FILE 2>&1 &
+        # 使用精确匹配获取Python进程ID
+        PID=$(pgrep -f "manage.py runserver 0.0.0.0:8000" | head -1)
+        if [ -z "$PID" ]; then
+            echo "进程启动失败"
+            exit 1
+        fi
+        echo $PID > $PID_FILE
         echo "服务已启动 (PID: $(cat $PID_FILE))"
         ;;
     stop)

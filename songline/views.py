@@ -1,7 +1,4 @@
-from .letter_views import *
-from .schedule_todo_views import *
-from .vista_views import vista_homepage  # 新增导入
-
+from django.shortcuts import render
 from django.template.defaulttags import register
 from django.http import StreamingHttpResponse
 from dashscope import Application
@@ -24,61 +21,14 @@ from django.http import JsonResponse
 import os
 from django.conf import settings
 
-def ai_chat_view(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            prompt = data.get('prompt')
-            
-            # 调用AI服务获取响应
-            response = Application.call(
-                api_key=os.getenv("DASHSCOPE_API_KEY"),
-                app_id="011797b6cc2343ff8c9bf5c72cebe978",
-                prompt=prompt
-            )
-            
-            if response.status_code == 200:
-                return JsonResponse({
-                    'output': {
-                        'text': str(response.output)  # 根据实际响应结构调整
-                    }
-                })
-            else:
-                return JsonResponse({'error': 'AI服务调用失败'}, status=500)
-                
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-@register.filter
-def get_item(dictionary, key):
-    if dictionary.get(int(key)) == None:
-        return "placeholder.jpg"
-    return dictionary.get(int(key))
-
 def portal_homepage(request):
     male_profile = UserProfile.objects.filter(gender='M').first()
     female_profile = UserProfile.objects.filter(gender='F').first()
     
-    return render(request, 'letters/portal_homepage.html', {
+    return render(request, 'portal_homepage.html', {
         'male_profile': male_profile,
         'female_profile': female_profile
     })
-
-def gamejam_home(request):
-    games = [
-        {
-            'name': 'Concern50', 
-            'url': 'concern50_game',  # 本地游戏路由
-            'is_external': False
-        },
-        # 可以在这里添加更多游戏
-    ]
-    return render(request, 'games/gamejam_home.html', {'games': games})
-
-def concern50_game(request):
-    return render(request, 'games/concern50.html')
 
 def switch_role(request):
     if request.method == 'POST':

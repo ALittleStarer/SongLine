@@ -1,0 +1,18 @@
+{% extends 'book_base.html' %}
+
+{% block content %}
+<div class="card">
+    {% if book.cover %}
+    <img src="{{ book.cover.url }}" class="card-img-top" alt="{{ book.title }}">
+    {% endif %}
+    <div class="card-body">
+        <h5 class="card-title">{{ book.title }}</h5>
+        <p class="card-text">
+            格式: {{ book.get_format_display }}<br>
+            创建时间: {{ book.created_at|date:"Y-m-d H:i" }}
+        </p>
+        <a href="{% url 'book_editor' book.pk %}" class="btn btn-warning">编辑</a>
+        <a href="{{ book.file.url }}" class="btn btn-success" download>下载</a>
+    </div>
+</div>
+{% endblock %}

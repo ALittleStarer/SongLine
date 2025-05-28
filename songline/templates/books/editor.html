@@ -1,0 +1,50 @@
+{% extends 'book_base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.bootcdn.net/ajax/libs/easymde/2.18.0/easymde.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">书名</label>
+                <input type="text" name="title" class="form-control" value="{{ book.title|default:'' }}" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">封面图片</label>
+                <input type="file" name="cover" class="form-control">
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">书籍文件</label>
+                <input type="file" name="file" class="form-control" required>
+                <small class="form-text text-muted">
+                    支持格式：PDF, Word(.docx), Markdown(.md), 纯文本(.txt)
+                </small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">保存</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.bootcdn.net/ajax/libs/easymde/2.18.0/easymde.min.js"></script>
+<script>
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('editor'),
+        autosave: {
+            enabled: true,
+            uniqueId: 'bookEditor',
+            delay: 1000
+        },
+        spellChecker: false
+    });
+</script>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse  # 添加这行导入
-from .models import Letter
+from ..models import Letter
 from .forms import LetterForm
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings

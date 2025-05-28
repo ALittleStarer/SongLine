@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://cdn.bootcdn.net/ajax/libs/easymde/2.18.0/easymde.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <input type="text" name="title" class="form-control" 
+                   value="{{ doc.title|default:'新文档' }}" required>
+        </div>
+        <div class="mb-3">
+            <textarea id="editor" name="content">{{ doc.content|default:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">保存</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.bootcdn.net/ajax/libs/easymde/2.18.0/easymde.min.js"></script>
+<script>
+    const easyMDE = new EasyMDE({
+        element: document.getElementById('editor'),
+        autosave: {
+            enabled: true,
+            uniqueId: 'docEditor',
+            delay: 1000
+        },
+        spellChecker: false,
+        toolbar: ["bold", "italic", "heading", "|", 
+                "code", "quote", "unordered-list", "ordered-list",
+                "link", "image", "preview", "side-by-side", "fullscreen"]
+    });
+</script>
+{% endblock %}

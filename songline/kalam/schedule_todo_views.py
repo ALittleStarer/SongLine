@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Schedule, Todo
+from ..models import Schedule, Todo
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_protect, csrf_exempt
 
@@ -32,7 +32,7 @@ def cpnet_homepage(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
     schedules = Schedule.objects.all()
-    return render(request, 'letters/cpnet_homepage.html', {'schedules': schedules})
+    return render(request, 'kalam/kalam.html', {'schedules': schedules})
 
 @csrf_exempt
 def schedule_operations(request):

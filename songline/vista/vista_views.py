@@ -52,7 +52,7 @@ def vista_homepage(request):
         else:
             current = current % len(images)
             current_image = images[current]
-        return render(request, 'letters/vista_album.html', {
+        return render(request, 'vista/vista_album.html', {
             'album': album,
             'images': images,
             'current': current,
@@ -60,7 +60,7 @@ def vista_homepage(request):
             'total': len(images)
         })
     
-    return render(request, 'letters/vista_homepage.html', {'albums': albums})
+    return render(request, 'vista/vista_homepage.html', {'albums': albums})
 
 
 def create_album(request):

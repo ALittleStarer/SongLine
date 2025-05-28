@@ -50,3 +50,39 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {'在线' if self.is_online else '离线'}"
+
+
+class Book(models.Model):
+    FORMAT_CHOICES = [
+        ('md', 'Markdown'),
+        ('docx', 'Word'),
+        ('pdf', 'PDF'), 
+        ('txt', 'Text')
+    ]
+    
+    title = models.CharField(max_length=200)
+    cover = models.ImageField(upload_to='book_covers/', null=True, blank=True)
+    file = models.FileField(upload_to='books/')  # 主文件存储
+    format = models.CharField(max_length=10, choices=FORMAT_CHOICES)
+    parsed_content = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_public = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+
+class Document(models.Model):
+    title = models.CharField("文档标题", max_length=200)
+    content = models.TextField("内容")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="作者")
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("最后修改", auto_now=True)
+    is_published = models.BooleanField("发布状态", default=True)
+
+    class Meta:
+        verbose_name = "技术文档"
+        verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return self.title
